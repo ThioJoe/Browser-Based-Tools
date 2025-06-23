@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +15,7 @@
             --red: #d73a49;
             --green: #28a745;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
@@ -22,8 +24,14 @@
             margin: 0 auto;
             padding: 20px;
         }
-        h1, h2 { text-align: center; }
-        input[type="text"], input[type="password"] {
+
+        h1,
+        h2 {
+            text-align: center;
+        }
+
+        input[type="text"],
+        input[type="password"] {
             padding: 8px 12px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
@@ -31,6 +39,7 @@
             width: 100%;
             box-sizing: border-box;
         }
+
         button {
             padding: 8px 14px;
             border: 1px solid rgba(27, 31, 35, 0.15);
@@ -42,104 +51,256 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
-        button:hover { background-color: #f3f4f6; }
-        button:disabled { background-color: #f6f8fa; cursor: not-allowed; opacity: 0.6; }
-        button.primary { background-color: var(--green); color: white; border-color: var(--green); font-weight: 600; }
-        button.primary:hover { background-color: #269f42; }
 
-        .tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
-        .tab-button { background: none; border: none; border-bottom: 3px solid transparent; padding: 10px 15px; font-size: 16px; border-radius: 0; }
-        .tab-button.active { border-bottom-color: var(--primary-color); font-weight: bold; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        .section { background-color: var(--background-light); border: 1px solid var(--border-color); border-radius: 6px; padding: 20px; margin-bottom: 20px; }
-        #fetcher .section { max-width: 800px; margin-left: auto; margin-right: auto; }
-        .section-title { margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-        .controls-grid { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-        #status, #full-fetch-status { margin-top: 15px; font-weight: bold; }
-        .error { color: var(--red); }
-        .success { color: var(--green); }
-        
+        button:hover {
+            background-color: #f3f4f6;
+        }
+
+        button:disabled {
+            background-color: #f6f8fa;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        button.primary {
+            background-color: var(--green);
+            color: white;
+            border-color: var(--green);
+            font-weight: 600;
+        }
+
+        button.primary:hover {
+            background-color: #269f42;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 0;
+        }
+
+        .tab-button.active {
+            border-bottom-color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            background-color: var(--background-light);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        #fetcher .section {
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .section-title {
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .controls-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #status,
+        #full-fetch-status {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .error {
+            color: var(--red);
+        }
+
+        .success {
+            color: var(--green);
+        }
+
         /* Viewer Layout */
-        .viewer-layout { display: flex; gap: 20px; align-items: flex-start; }
-        .entity-list-container { flex: 0 0 250px; }
+        .viewer-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .entity-list-container {
+            flex: 0 0 250px;
+        }
+
         .viewer-main-content {
             flex-grow: 1;
-            min-width: 0; /* Important: allows the flex item to shrink below its content size */
+            min-width: 0;
+            /* Important: allows the flex item to shrink below its content size */
         }
-        #entityList .entity-item { display: block; width: 100%; padding: 10px; border: 1px solid transparent; border-radius: 6px; text-align: left; background: none; margin-bottom: 5px; }
-        #entityList .entity-item.active { background-color: var(--primary-color); color: white; font-weight: bold; }
-        #entityList .entity-item:not(.active):hover { background-color: #f3f4f6; }
+
+        #entityList .entity-item {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            text-align: left;
+            background: none;
+            margin-bottom: 5px;
+        }
+
+        #entityList .entity-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        #entityList .entity-item:not(.active):hover {
+            background-color: #f3f4f6;
+        }
 
         /* Table Styles - FIXED FOR PROPER RESIZING */
-        .table-container { 
-            overflow-x: auto; 
-            border: 1px solid var(--border-color); 
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
             position: relative;
         }
+
         table {
             border-collapse: collapse;
-            table-layout: fixed; /* This is crucial for consistent column widths */
-            width: auto; /* Allow table to grow beyond container */
-            min-width: 100%; /* But at least fill the container */
+            table-layout: fixed;
+            /* This is crucial for consistent column widths */
+            width: auto;
+            /* Allow table to grow beyond container */
+            min-width: 100%;
+            /* But at least fill the container */
         }
-        th, td { 
-            padding: 12px 15px; 
-            text-align: left; 
-            border-bottom: 1px solid var(--border-color); 
-            white-space: nowrap; 
-            overflow: hidden; 
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+            overflow: hidden;
             text-overflow: ellipsis;
-            box-sizing: border-box; /* Include padding in width calculations */
+            box-sizing: border-box;
+            /* Include padding in width calculations */
         }
+
         #repoTableBody td:first-child {
             white-space: normal;
-            word-break: break-all; /* Allow long names to wrap */
+            word-break: break-all;
+            /* Allow long names to wrap */
             min-width: 18rem;
         }
-        thead tr:last-child th { border-bottom: none; }
-        tr:last-child td { border-bottom: none; }
-        th { 
-            background-color: var(--background-light); 
-            user-select: none; 
-            position: relative;
-            min-width: 50px; /* Minimum column width */
+
+        thead tr:last-child th {
+            border-bottom: none;
         }
-        th.sortable-header { cursor: pointer; }
-        th.sortable-header:hover { background-color: #eef1f4; }
-        th .sort-indicator { 
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        th {
+            background-color: var(--background-light);
+            user-select: none;
+            position: relative;
+            min-width: 50px;
+            /* Minimum column width */
+        }
+
+        th.sortable-header {
+            cursor: pointer;
+        }
+
+        th.sortable-header:hover {
+            background-color: #eef1f4;
+        }
+
+        th .sort-indicator {
             display: inline-block;
             width: 1em;
             color: var(--text-muted);
             margin-right: 6px;
         }
-        tr:hover { background-color: #f6f8fa; }
-        td a { color: var(--primary-color); text-decoration: none; }
-        td a:hover { text-decoration: underline; }
+
+        tr:hover {
+            background-color: #f6f8fa;
+        }
+
+        td a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        td a:hover {
+            text-decoration: underline;
+        }
 
         /* Resizable Columns */
-        .resize-handle { 
-            position: absolute; 
-            top: 0; 
-            right: -3px; 
-            width: 6px; 
-            height: 100%; 
-            cursor: col-resize; 
+        .resize-handle {
+            position: absolute;
+            top: 0;
+            right: -3px;
+            width: 6px;
+            height: 100%;
+            cursor: col-resize;
             z-index: 10;
-            background: transparent; /* Make it easier to grab */
+            background: transparent;
+            /* Make it easier to grab */
         }
+
         .resize-handle:hover {
             background: rgba(0, 0, 0, 0.1);
         }
 
         /* Filter Styles */
-        .filter-row th { padding: 8px; }
-        .language-filter-cell { position: relative; overflow: visible; }
-        .language-filter { position: relative; }
-        .language-filter-button { width: 100%; text-align: left; background-color: white; padding: 8px 12px; font-size: 14px; font-weight: normal; }
-        
+        .filter-row th {
+            padding: 8px;
+        }
+
+        .language-filter-cell {
+            position: relative;
+            overflow: visible;
+        }
+
+        .language-filter {
+            position: relative;
+        }
+
+        .language-filter-button {
+            width: 100%;
+            text-align: left;
+            background-color: white;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: normal;
+        }
+
         .language-filter-dropdown {
             display: none;
             position: fixed;
@@ -149,13 +310,29 @@
             max-height: 250px;
             overflow-y: auto;
             z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
-        .language-filter-dropdown div { padding: 8px 12px; }
-        .language-filter-dropdown label { display: block; width: 100%; font-weight: normal;}
 
-        .api-key-container { display: flex; align-items: center; gap: 5px; flex-grow: 1; }
-        .api-key-container a { white-space: nowrap; }
+        .language-filter-dropdown div {
+            padding: 8px 12px;
+        }
+
+        .language-filter-dropdown label {
+            display: block;
+            width: 100%;
+            font-weight: normal;
+        }
+
+        .api-key-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+        .api-key-container a {
+            white-space: nowrap;
+        }
 
         /* Tooltip Styles */
         .tooltip {
@@ -171,13 +348,15 @@
             width: 16px;
             height: 16px;
             text-align: center;
-            line-height: 14px; /* Adjust for better vertical alignment */
+            line-height: 14px;
+            /* Adjust for better vertical alignment */
             font-size: 12px;
             font-style: italic;
             font-family: 'Times New Roman', Times, serif;
             color: var(--text-muted);
             cursor: help;
-            user-select: none; /* Prevent text selection */
+            user-select: none;
+            /* Prevent text selection */
         }
 
         .tooltip .tooltip-text {
@@ -185,28 +364,33 @@
             width: 250px;
             background-color: #333;
             color: #fff;
-            text-align: left; /* Better for a sentence */
+            text-align: left;
+            /* Better for a sentence */
             border-radius: 6px;
             padding: 8px 12px;
             position: absolute;
-            z-index: 1001; /* Ensure it's on top of other elements */
-            bottom: 150%; /* Position above the icon */
+            z-index: 1001;
+            /* Ensure it's on top of other elements */
+            bottom: 150%;
+            /* Position above the icon */
             left: 50%;
-            transform: translateX(-50%); /* Center it */
+            transform: translateX(-50%);
+            /* Center it */
             opacity: 0;
             transition: opacity 0.3s;
             font-size: 12px;
             font-weight: normal;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             font-style: normal;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
-        
+
         /* Arrow for the tooltip */
         .tooltip .tooltip-text::after {
             content: "";
             position: absolute;
-            top: 100%; /* At the bottom of the tooltip */
+            top: 100%;
+            /* At the bottom of the tooltip */
             left: 50%;
             margin-left: -5px;
             border-width: 5px;
@@ -221,18 +405,32 @@
 
 
         /* Release info styles */
-        .has-exe { color: var(--green); font-weight: bold; }
-        .no-exe { color: var(--text-muted); }
-        .loading-releases { color: var(--text-muted); font-style: italic; }
+        .has-exe {
+            color: var(--green);
+            font-weight: bold;
+        }
 
-        .token-message a { /* Or a more specific selector for your link */
-            color: #66b2ff; /* A lighter blue, or choose another color */
-            text-decoration: underline; /* Ensures it's always visibly a link */
+        .no-exe {
+            color: var(--text-muted);
+        }
+
+        .loading-releases {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .token-message a {
+            /* Or a more specific selector for your link */
+            color: #66b2ff;
+            /* A lighter blue, or choose another color */
+            text-decoration: underline;
+            /* Ensures it's always visibly a link */
             white-space: nowrap;
         }
 
         .token-message a:hover {
-            color: #8cc9ff; /* Slightly lighter on hover */
+            color: #8cc9ff;
+            /* Slightly lighter on hover */
         }
 
         @media (prefers-color-scheme: dark) {
@@ -244,57 +442,81 @@
                 --text-muted: #8b949e;
                 --green: #238636;
             }
+
             body {
                 background-color: #0d1117;
             }
-            input[type="text"], input[type="password"] {
+
+            input[type="text"],
+            input[type="password"] {
                 background-color: #010409;
                 border-color: var(--border-color);
                 color: var(--text-color);
             }
+
             button {
                 background-color: #21262d;
                 color: var(--text-color);
                 border-color: rgba(240, 246, 252, 0.1);
             }
+
             button:hover {
                 background-color: #30363d;
                 border-color: #8b949e;
             }
+
             button:disabled {
                 background-color: #21262d;
                 opacity: 0.5;
             }
+
             button.primary {
                 background-color: var(--green);
                 color: white;
                 border-color: var(--green);
             }
+
             button.primary:hover {
                 background-color: #2ea043;
             }
-            th.sortable-header:hover { background-color: #1f242c; }
-            #entityList .entity-item:not(.active):hover { background-color: #161b22; }
-            tr:hover { background-color: #161b22; }
-            .resize-handle:hover { background: rgba(255, 255, 255, 0.1); }
-            
+
+            th.sortable-header:hover {
+                background-color: #1f242c;
+            }
+
+            #entityList .entity-item:not(.active):hover {
+                background-color: #161b22;
+            }
+
+            tr:hover {
+                background-color: #161b22;
+            }
+
+            .resize-handle:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
             .language-filter-button {
                 background-color: #0d1117;
             }
+
             .language-filter-dropdown {
                 background-color: #161b22;
                 border-color: var(--border-color);
             }
+
             .tooltip .tooltip-text {
                 background-color: #484f58;
                 color: var(--text-color);
             }
+
             .tooltip .tooltip-text::after {
                 border-top-color: #484f58;
             }
         }
     </style>
 </head>
+
 <body>
 
     <h1>GitHub Repo Explorer</h1>
@@ -307,11 +529,13 @@
     <div id="viewer" class="tab-content active">
         <div class="viewer-layout">
             <div class="entity-list-container">
-                 <div class="section" style="padding: 15px;">
-                     <div class="controls-grid" style="gap: 5px;">
-                         <button onclick="App.updateAll()" title="Check all cached users for updated repositories.">Update All</button>
-                         <button onclick="document.getElementById('importInput').click()" title="Import a cache file.">Import Cache</button>
-                         <input type="file" id="importInput" accept=".json" style="display: none;" onchange="App.importData(event)">
+                <div class="section" style="padding: 15px;">
+                    <div class="controls-grid" style="gap: 5px;">
+                        <button onclick="App.updateAll()" title="Check all cached users for updated repositories.">Update All</button>
+                        <button onclick="document.getElementById('importInput').click()" title="Import a cache file.">Import Cache</button>
+                        <button onclick="App.exportAllData()" title="Export entire cache.">Export Cache</button>
+                        <button id="deleteButton" onclick="App.deleteAllData()" title="Delete entire cache." style="color: red;">Delete All</button>
+                        <input type="file" id="importInput" accept=".json" style="display: none;" onchange="App.importData(event)">
                     </div>
                 </div>
                 <div class="section">
@@ -380,7 +604,7 @@
                         </table>
                     </div>
                 </div>
-                 <div id="viewer-prompt" class="section" style="text-align: center;">
+                <div id="viewer-prompt" class="section" style="text-align: center;">
                     <p>Select a cached user from the list on the left to view their repositories.</p>
                     <p>If the list is empty, use the 'Full Fetch Tool' tab to get started.</p>
                 </div>
@@ -634,6 +858,18 @@
                 document.getElementById('viewer-prompt').style.display = 'block';
             },
 
+            async deleteAllData() {
+                const entities = await this.getAllCachedEntities();
+                if (entities.length === 0 || !confirm(`Are you sure you want to delete all cached data?`)) return;
+                for (const entity of entities) {
+                    await DB.delete(DB.STORES.ENTITIES, entity);
+                    await this.populateEntityList();
+                    await this.selectEntity(null);
+                }
+                document.getElementById('results-container').style.display = 'none';
+                document.getElementById('viewer-prompt').style.display = 'block';
+            },
+
             async exportData() {
                 const entity = this.state.currentEntity;
                 if (!entity) return;
@@ -647,6 +883,25 @@
                 URL.revokeObjectURL(a.href);
             },
 
+            async exportAllData() {
+                const entities = await this.getAllCachedEntities();
+                if (entities.length === 0) {
+                    this.setStatus('No cached data to export.', 'info');
+                    return;
+                }
+                const allData = [];
+                for (const entity of entities) {
+                    const data = await this.getCache(entity);
+                    if (data) allData.push(data);
+                }
+                const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'github_repo_cache.json';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            },
+
             importData(event) {
                 const file = event.target.files[0];
                 if (!file) return;
@@ -654,10 +909,19 @@
                 reader.onload = async (e) => {
                     try {
                         const data = JSON.parse(e.target.result);
-                        if (!data.entity || !data.repos || !data.fetchedAt) throw new Error("Invalid cache file format.");
-                        await this.setCache(data.entity, data);
-                        await this.populateEntityList();
-                        await this.selectEntity(data.entity);
+                        if (Array.isArray(data)) {
+                            for (const item of data) {
+                                if (!item.entity || !item.repos || !item.fetchedAt) throw new Error("Invalid cache file format.");
+                                await this.setCache(item.entity, item);
+                                await this.populateEntityList();
+                                await this.selectEntity(item.entity);
+                            }
+                        } else {
+                            if (!data.entity || !data.repos || !data.fetchedAt) throw new Error("Invalid cache file format.");
+                            await this.setCache(data.entity, data);
+                            await this.populateEntityList();
+                            await this.selectEntity(data.entity);
+                        }
                     } catch (err) { this.setStatus(`Import failed: ${err.message}`, 'error'); }
                     finally { event.target.value = ''; }
                 };
@@ -813,7 +1077,7 @@
                 }
 
                 const cachedData = await this.getCache(entityName);
-                if (!cachedData || !cachedData.repos) 
+                if (!cachedData || !cachedData.repos)
                     return;
 
                 try {
@@ -986,11 +1250,11 @@
                     if (sortBy === 'has_releases') {
                         // Convert to numeric for better sorting: Yes with .exe (2), Yes (1), No (0), undefined (-1)
                         const getVal = (repo) => {
-                            if (repo.has_releases === true && repo.has_exe === true) 
+                            if (repo.has_releases === true && repo.has_exe === true)
                                 return 2;
-                            if (repo.has_releases === true) 
+                            if (repo.has_releases === true)
                                 return 1;
-                            if (repo.has_releases === false) 
+                            if (repo.has_releases === false)
                                 return 0;
 
                             return -1;
@@ -1121,4 +1385,5 @@
         });
     </script>
 </body>
+
 </html>
