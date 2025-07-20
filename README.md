@@ -1,3 +1,34 @@
+
+<div align="right">
+  <details>
+    <summary >🌐 Language</summary>
+    <div>
+      <div align="center">
+        <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=en">English</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=zh-CN">简体中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=zh-TW">繁體中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=ja">日本語</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=ko">한국어</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=hi">हिन्दी</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=th">ไทย</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=fr">Français</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=de">Deutsch</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=es">Español</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=it">Italiano</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=ru">Русский</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=pt">Português</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=nl">Nederlands</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=pl">Polski</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=ar">العربية</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=fa">فارسی</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=tr">Türkçe</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=vi">Tiếng Việt</a>
+        | <a href="https://openaitx.github.io/view.html?user=ThioJoe&project=Browser-Based-Tools&lang=id">Bahasa Indonesia</a>
+      </div>
+    </div>
+  </details>
+</div>
+
 # Thio's Browser-Based Tools
 Various utilities and tools that run locally right in your browser.
 
