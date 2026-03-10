@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NuGet Dependency Tree Explorer</title>
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --accent: #0078d4;
+            --accent-hover: #005a9e;
+            --border: #333333;
+            --error: #ff5252;
+            --success: #4caf50;
+            --verified: #3897f0;
+            --package-node: #2d2d2d;
+            --package-filtered: #242424;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header & Input Styles */
+        header {
+            background-color: var(--bg-secondary);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.8rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        button:disabled {
+            background-color: var(--border);
+            cursor: not-allowed;
+        }
+
+        /* Filter Panel */
+        .filter-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            border: 1px dashed var(--border);
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85rem;
+            background: var(--bg-primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .filter-item:hover {
+            border-color: var(--accent);
+        }
+
+        .filter-item input {
+            cursor: pointer;
+        }
+
+        /* Layout */
+        main {
+            flex-grow: 1;
+            overflow: auto;
+            padding: 2rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #status-bar {
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+        }
+
+        /* Tree Visualization */
+        .tree-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        ul.tree {
+            list-style-type: none;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        ul.tree ul {
+            list-style-type: none;
+            position: relative;
+            padding-left: 30px;
+            margin-top: 5px;
+        }
+
+        ul.tree ul::before {
+            content: "";
+            display: block;
+            width: 0;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 10px;
+            border-left: 1px solid var(--border);
+        }
+
+        li.node {
+            margin: 8px 0;
+            position: relative;
+        }
+
+        li.node::before {
+            content: "";
+            display: block;
+            width: 20px;
+            height: 0;
+            border-top: 1px solid var(--border);
+            position: absolute;
+            top: 15px;
+            left: -20px;
+        }
+
+        .package-card {
+            background-color: var(--package-node);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 240px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+            transition: opacity 0.3s;
+        }
+
+        /* Faded look for required but filtered nodes */
+        .package-card.filtered-passthrough {
+            background-color: var(--package-filtered);
+            border-style: dashed;
+            opacity: 0.6;
+        }
+
+        .package-name {
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .package-version {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: rgba(255,255,255,0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .verified-icon {
+            color: var(--verified);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: -2px;
+        }
+
+        .circular-badge {
+            font-size: 0.7rem;
+            background: var(--error);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            text-transform: uppercase;
+        }
+
+        .hidden { display: none !important; }
+        .error-msg { color: var(--error); padding: 10px; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-content">
+        <div class="input-group">
+            <input type="text" id="packageInput" placeholder="Package ID (e.g., Microsoft.Maui.Graphics.Skia)" autocomplete="off">
+            <button id="analyzeBtn">Analyze Dependencies</button>
+        </div>
+        <div id="filterArea" class="filter-panel hidden">
+            <span style="font-size: 0.8rem; color: var(--text-secondary); width: 100%;">Namespace Visibility Filters:</span>
+            <!-- Filters populated dynamically -->
+        </div>
+    </div>
+</header>
+
+<main id="mainOutput">
+    <div id="welcomeScreen" style="text-align: center; margin-top: 100px;">
+        <h2 style="color: var(--text-secondary);">NuGet Dependency Visualizer</h2>
+        <p style="color: var(--text-secondary);">Recursively map dependency chains with namespace filtering and verification status.</p>
+    </div>
+    <div id="treeView" class="tree-container"></div>
+</main>
+
+<div id="status-bar">Ready</div>
+
+<script>
+    const packageInput = document.getElementById('packageInput');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const treeView = document.getElementById('treeView');
+    const welcomeScreen = document.getElementById('welcomeScreen');
+    const statusBar = document.getElementById('status-bar');
+    const filterArea = document.getElementById('filterArea');
+
+    // State
+    let serviceIndex = null;
+    let registrationBaseUrl = null;
+    let flatContainerBaseUrl = null;
+    let searchBaseUrl = null;
+    
+    let rootNode = null;
+    const fetchCache = new Map();
+    const verificationCache = new Map();
+    const visitedInCurrentPath = new Set();
+    
+    // Namespace management - Store as Map to track verification metadata
+    let allNamespaces = new Map();
+    const hiddenNamespaces = new Set();
+
+    const VERIFIED_SVG = `
+        <div class="verified-icon" title="This package has a reserved ID prefix">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+        </div>`;
+
+    async function initServiceIndex() {
+        if (serviceIndex) return true;
+        updateStatus("Fetching NuGet Service Index...");
+        try {
+            const response = await fetch('https://api.nuget.org/v3/index.json');
+            serviceIndex = await response.json();
+            
+            const regResource = serviceIndex.resources.find(r => r['@type'] === 'RegistrationsBaseUrl/3.6.0') 
+                             || serviceIndex.resources.find(r => r['@type'] === 'RegistrationsBaseUrl');
+            const flatResource = serviceIndex.resources.find(r => r['@type'] === 'PackageBaseAddress/3.0.0');
+            const searchResource = serviceIndex.resources.find(r => r['@type'] === 'SearchQueryService/3.5.0')
+                                || serviceIndex.resources.find(r => r['@type'] === 'SearchQueryService');
+
+            registrationBaseUrl = regResource['@id'];
+            flatContainerBaseUrl = flatResource['@id'];
+            searchBaseUrl = searchResource['@id'];
+            
+            return true;
+        } catch (e) {
+            updateStatus("Failed to load NuGet Service Index.");
+            return false;
+        }
+    }
+
+    analyzeBtn.addEventListener('click', async () => {
+        const pkg = packageInput.value.trim();
+        if (!pkg) return;
+        
+        const initialized = await initServiceIndex();
+        if (!initialized) return;
+
+        let cleanId = pkg;
+        if (pkg.includes('nuget.org/packages/')) {
+            const parts = pkg.split('packages/')[1].split('/');
+            cleanId = parts[0];
+        }
+
+        startAnalysis(cleanId);
+    });
+
+    packageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') analyzeBtn.click();
+    });
+
+    async function startAnalysis(packageId) {
+        treeView.innerHTML = '';
+        welcomeScreen.classList.add('hidden');
+        filterArea.classList.add('hidden');
+        fetchCache.clear();
+        verificationCache.clear();
+        visitedInCurrentPath.clear();
+        allNamespaces.clear();
+        
+        analyzeBtn.disabled = true;
+        updateStatus(`Analyzing ${packageId}...`);
+
+        try {
+            rootNode = await buildDependencyTree(packageId, null, 0);
+            updateFilterUI();
+            filterArea.classList.remove('hidden');
+            renderRoot();
+            updateStatus('Analysis complete.');
+        } catch (err) {
+            console.error(err);
+            treeView.innerHTML = `<div class="error-msg">Error: ${err.message}</div>`;
+            updateStatus('Analysis failed.');
+        } finally {
+            analyzeBtn.disabled = false;
+        }
+    }
+
+    function updateStatus(msg) {
+        statusBar.textContent = msg;
+    }
+
+    async function buildDependencyTree(id, versionConstraint = null, depth = 0) {
+        const idLower = id.toLowerCase();
+        
+        // Track namespace
+        const ns = id.split('.')[0];
+        if (!allNamespaces.has(ns)) {
+            allNamespaces.set(ns, { isVerified: false });
+        }
+
+        const version = await resolveVersion(idLower, versionConstraint);
+        const cacheKey = `${idLower}|${version}`;
+
+        const node = {
+            id,
+            namespace: ns,
+            version,
+            dependencies: [],
+            isCircular: false,
+            isError: false,
+            isVerified: false
+        };
+
+        if (visitedInCurrentPath.has(idLower)) {
+            node.isCircular = true;
+            return node;
+        }
+
+        if (fetchCache.has(cacheKey)) {
+            return fetchCache.get(cacheKey);
+        }
+
+        visitedInCurrentPath.add(idLower);
+
+        try {
+            // Concurrent fetch of metadata and verification status
+            const [metadata, isVerified] = await Promise.all([
+                getPackageMetadata(idLower, version),
+                checkVerification(id)
+            ]);
+            
+            node.isVerified = isVerified;
+            
+            // If any package in this namespace is verified, mark the namespace as verified for filters
+            if (isVerified) {
+                allNamespaces.get(ns).isVerified = true;
+            }
+
+            if (metadata && metadata.dependencyGroups) {
+                const depMap = new Map();
+                metadata.dependencyGroups.forEach(group => {
+                    if (group.dependencies) {
+                        group.dependencies.forEach(d => {
+                            if (!depMap.has(d.id)) depMap.set(d.id, d.range || null);
+                        });
+                    }
+                });
+
+                const childPromises = Array.from(depMap.entries()).map(([depId, range]) => {
+                    return buildDependencyTree(depId, range, depth + 1);
+                });
+
+                node.dependencies = await Promise.all(childPromises);
+            }
+            fetchCache.set(cacheKey, node);
+        } catch (e) {
+            node.isError = true;
+        } finally {
+            visitedInCurrentPath.delete(idLower);
+        }
+
+        return node;
+    }
+
+    /**
+     * Uses the SearchQueryService to check if a package ID is verified (reserved prefix).
+     */
+    async function checkVerification(id) {
+        if (verificationCache.has(id.toLowerCase())) {
+            return verificationCache.get(id.toLowerCase());
+        }
+
+        try {
+            // Precise query for the package ID
+            const url = `${searchBaseUrl}?q=packageid:${id}&take=1`;
+            const resp = await fetch(url);
+            if (!resp.ok) return false;
+            
+            const data = await resp.json();
+            const result = data.data && data.data[0];
+            
+            // The Search API result contains the 'verified' boolean we need
+            const isVerified = result && result.id.toLowerCase() === id.toLowerCase() && !!result.verified;
+            
+            verificationCache.set(id.toLowerCase(), isVerified);
+            return isVerified;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    async function resolveVersion(idLower, constraint) {
+        const url = `${flatContainerBaseUrl}${idLower}/index.json`;
+        try {
+            const resp = await fetch(url);
+            if (!resp.ok) return "latest";
+            const data = await resp.json();
+            const versions = data.versions;
+            if (!constraint || constraint === '*' || constraint === '') {
+                const stable = versions.filter(v => !v.includes('-')).reverse();
+                return stable.length > 0 ? stable[0] : versions[versions.length - 1];
+            }
+            const cleanConstraint = constraint.replace(/[\[\]\(\),]/g, '').trim().split(' ')[0];
+            return versions.find(v => v.toLowerCase() === cleanConstraint.toLowerCase()) || versions[versions.length - 1];
+        } catch (e) { return "latest"; }
+    }
+
+    async function getPackageMetadata(idLower, version) {
+        const url = `${registrationBaseUrl}${idLower}/index.json`;
+        try {
+            const resp = await fetch(url);
+            if (!resp.ok) return null;
+            const data = await resp.json();
+            return await findLeafInRegistration(data, version);
+        } catch (e) { return null; }
+    }
+
+    async function findLeafInRegistration(indexData, version) {
+        for (const page of indexData.items) {
+            if (page.items) {
+                const found = page.items.find(leaf => leaf.catalogEntry.version.toLowerCase() === version.toLowerCase());
+                if (found) return found.catalogEntry;
+            } else {
+                try {
+                    const pageResp = await fetch(page['@id']);
+                    const pageData = await pageResp.json();
+                    const found = pageData.items.find(leaf => leaf.catalogEntry.version.toLowerCase() === version.toLowerCase());
+                    if (found) return found.catalogEntry;
+                } catch (err) { continue; }
+            }
+        }
+        return (indexData.items[0] && indexData.items[0].items) ? indexData.items[0].items[0].catalogEntry : null;
+    }
+
+    // --- Filtering Logic ---
+
+    function updateFilterUI() {
+        const sortedNamespaces = Array.from(allNamespaces.keys()).sort();
+        const label = filterArea.firstElementChild;
+        filterArea.innerHTML = '';
+        filterArea.appendChild(label);
+
+        sortedNamespaces.forEach(ns => {
+            const meta = allNamespaces.get(ns);
+            const labelEl = document.createElement('label');
+            labelEl.className = 'filter-item';
+            
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = !hiddenNamespaces.has(ns);
+            cb.addEventListener('change', () => {
+                if (cb.checked) hiddenNamespaces.delete(ns);
+                else hiddenNamespaces.add(ns);
+                renderRoot();
+            });
+
+            labelEl.appendChild(cb);
+            
+            const textSpan = document.createElement('span');
+            textSpan.textContent = ns + '.*';
+            labelEl.appendChild(textSpan);
+
+            // Add verification badge in filter too
+            if (meta.isVerified) {
+                const badgeContainer = document.createElement('div');
+                badgeContainer.innerHTML = VERIFIED_SVG;
+                badgeContainer.style.display = 'inline-block';
+                labelEl.appendChild(badgeContainer);
+            }
+
+            filterArea.appendChild(labelEl);
+        });
+    }
+
+    function getNodeVisibility(node) {
+        const isNamespaceHidden = hiddenNamespaces.has(node.namespace);
+        const visibleChildren = node.dependencies.filter(dep => getNodeVisibility(dep).isVisible);
+        const isVisible = !isNamespaceHidden || visibleChildren.length > 0;
+        const isPassthrough = isNamespaceHidden && visibleChildren.length > 0;
+        return { isVisible, isPassthrough, visibleChildren };
+    }
+
+    function renderRoot() {
+        if (!rootNode) return;
+        treeView.innerHTML = '';
+        renderNode(rootNode, treeView);
+    }
+
+    function renderNode(node, container) {
+        const vis = getNodeVisibility(node);
+        if (!vis.isVisible) return;
+
+        const ul = document.createElement('ul');
+        ul.className = 'tree';
+        
+        const li = document.createElement('li');
+        li.className = 'node';
+
+        const card = document.createElement('div');
+        card.className = 'package-card';
+        if (vis.isPassthrough) card.classList.add('filtered-passthrough');
+        
+        let content = `<span class="package-name">${node.id}</span>`;
+        
+        // Verification badge (blue check)
+        if (node.isVerified) {
+            content += VERIFIED_SVG;
+        }
+
+        content += `<span class="package-version">${node.version}</span>`;
+        if (node.isCircular) content += `<span class="circular-badge">Circular</span>`;
+        
+        card.innerHTML = content;
+        li.appendChild(card);
+        ul.appendChild(li);
+
+        if (vis.visibleChildren.length > 0 && !node.isCircular) {
+            const subContainer = document.createElement('div');
+            vis.visibleChildren.forEach(child => {
+                renderNode(child, subContainer);
+            });
+            li.appendChild(subContainer);
+        }
+
+        container.appendChild(ul);
+    }
+</script>
+
+</body>
+</html>

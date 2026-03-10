@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Dependency Explorer</title>
+    <style>
+        :root {
+            --bg-color: #020617;
+            --card-bg: #0f172a;
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #7dd3fc;
+            --amber: #f59e0b;
+            --amber-dark: #92400e;
+            --amber-dim: rgba(245, 158, 11, 0.1);
+            --success: #22c55e;
+            --error: #ef4444;
+            --border: #1e293b;
+            --input-bg: #020617;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--border);
+        }
+
+        header {
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr auto;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            .input-row { grid-template-columns: 1fr; }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-with-button {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-with-button input {
+            flex: 1;
+        }
+
+        input {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .btn-primary { background-color: var(--accent); color: #020617; }
+        .btn-primary:hover { background-color: var(--accent-hover); transform: translateY(-1px); }
+        .btn-amber { background-color: var(--amber); color: #020617; }
+        .btn-amber:hover { background-color: #fbbf24; transform: translateY(-1px); }
+        .btn-secondary { background-color: #334155; color: #fff; }
+        .btn-secondary:hover { background-color: #475569; }
+        .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
+        .btn-ghost:hover { color: var(--text-main); border-color: var(--text-dim); }
+
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        /* Discovery Section Styling */
+        .discovery-well {
+            background: #020617;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--amber);
+            border-radius: 8px;
+            padding: 14px;
+            margin-top: 4px;
+        }
+
+        .extras-discovery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+            min-height: 24px;
+            align-items: center;
+        }
+
+        .extras-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .extras-separator {
+            width: 1px;
+            height: 20px;
+            background: var(--border);
+            margin: 0 4px;
+        }
+
+        .extra-pill {
+            background: #1e293b;
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-family: 'Consolas', monospace;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-dim);
+        }
+
+        .extra-pill:hover { border-color: var(--amber); color: var(--amber); }
+        .extra-pill.active { background: var(--amber); color: #020617; border-color: var(--amber); font-weight: bold; }
+
+        /* Analyze Bar */
+        .analyze-bar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .btn-large {
+            padding: 14px 48px;
+            font-size: 1.1rem;
+            min-width: 280px;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+
+        /* Results Area */
+        .results-container {
+            background: #020617;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 500px;
+        }
+
+        .results-header {
+            background: #0f172a;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toggle-group input {
+            cursor: pointer;
+        }
+
+        .view-toggles {
+            display: flex;
+            background: #1e293b;
+            padding: 4px;
+            border-radius: 8px;
+            gap: 4px;
+        }
+
+        .view-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-btn.active { background: #334155; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+        #view-content {
+            padding: 20px;
+            flex: 1;
+            overflow: auto;
+        }
+
+        /* Tree Styles */
+        .tree-node { margin-left: 20px; border-left: 1px solid #1e293b; position: relative; }
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: default;
+            transition: background 0.2s;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9rem;
+        }
+        .node-header:hover { background: rgba(255, 255, 255, 0.05); }
+        .node-name { color: var(--text-main); font-weight: 500; }
+        .node-version { color: var(--accent); background: rgba(56, 189, 248, 0.1); padding: 1px 6px; border-radius: 4px; font-size: 0.75rem; }
+        .node-meta { color: var(--text-dim); font-size: 0.75rem; }
+        .node-error { color: var(--error); font-size: 0.8rem; }
+        
+        .node-grayed {
+            opacity: 0.4;
+            filter: grayscale(1);
+        }
+
+        .node-name-maintainer {
+            color: var(--amber);
+        }
+
+        .node-grayed .node-name-maintainer {
+            color: var(--amber-dark);
+            opacity: 1; /* Maintain visibility but at a darker tone */
+            filter: none;
+        }
+
+        /* List Styles */
+        .flat-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 12px;
+        }
+        .list-item {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Icons */
+        .icon { width: 16px; height: 16px; flex-shrink: 0; }
+        .icon-box { color: var(--amber); }
+        .icon-dep { color: var(--text-dim); }
+
+        #status-bar {
+            padding: 8px 20px;
+            background: #0f172a;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .local-file-warning {
+            background: var(--amber-dim);
+            border: 1px solid var(--amber);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 0.875rem;
+        }
+        .local-file-warning.visible { display: flex; }
+        .local-file-warning-icon { color: var(--amber); flex-shrink: 0; margin-top: 1px; }
+        .local-file-warning-body { flex: 1; }
+        .local-file-warning-title { font-weight: 700; color: var(--amber); margin-bottom: 5px; }
+        .local-file-warning-dismiss {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 0;
+            font-size: 1.2rem;
+            line-height: 1;
+            flex-shrink: 0;
+            margin-top: -2px;
+        }
+        .local-file-warning-dismiss:hover { color: var(--text-main); }
+
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 28px; height: 28px;">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            Python Dependency Explorer
+        </h1>
+        <div class="subtitle">Recursive dependency tree & metadata visualizer for PyPI</div>
+    </header>
+    
+    <div id="local-file-warning" class="local-file-warning" role="alert">
+        <svg class="local-file-warning-icon" style="width:20px;height:20px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div class="local-file-warning-body">
+            <div class="local-file-warning-title">Running as a local file (file://)</div>
+            <div style="color: var(--text-main); line-height: 1.5;">
+                Browsers block cross-origin network requests from <code style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:4px">file://</code> pages, so PyPI API calls may fail.
+                To fix this, either serve this file from a local web server (e.g. <code style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:4px">python -m http.server</code>),
+                or set a CORS proxy URL in the <code style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:4px">CORS_PROXY_URL</code> variable at the top of the script.
+            </div>
+        </div>
+        <button class="local-file-warning-dismiss" onclick="document.getElementById('local-file-warning').classList.remove('visible')" title="Dismiss">&times;</button>
+    </div>
+
+    <div class="control-panel">
+        <div class="input-row">
+            <div class="form-group">
+                <label for="packageName">Package Name</label>
+                <div class="input-with-button">
+                    <input type="text" id="packageName" placeholder="e.g. requests" value="requests" oninput="handlePackageNameChange()">
+                    <button class="btn btn-amber" onclick="discoverExtras()" title="Scan PyPI for available extras">
+                        Scan Extras
+                    </button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="extras">Selected Extras</label>
+                <input type="text" id="extras" placeholder="Click tags below or type manually" oninput="updatePillStates()">
+            </div>
+            <div class="flex gap-2">
+                <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Available Extras (Discovered)</label>
+            <div class="discovery-well">
+                <div id="extras-discovery" class="extras-discovery">
+                    <span style="color: var(--text-dim); font-size: 0.75rem;">Click "Scan Extras" to see optional features for this package.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="analyze-bar">
+        <button id="btnRun" class="btn btn-primary btn-large" onclick="startAnalysis()">
+            <svg class="icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            Analyze Dependencies
+        </button>
+    </div>
+
+    <div class="results-container">
+        <div class="results-header">
+            <div id="result-info" style="font-size: 0.9rem; font-weight: 600;">No results yet</div>
+            
+            <div class="header-controls">
+                <div id="maintainer-toggle-wrap" style="display: none; align-items: center; gap: 12px;">
+                    <label class="toggle-group">
+                        <input type="checkbox" id="hide-maintainer-toggle" onchange="render()">
+                        <span>Hide Maintainer Packages</span>
+                    </label>
+                    <span style="font-size: 0.75rem; color: var(--text-dim); display: flex; align-items: center; gap: 5px; white-space: nowrap;">
+                        <span style="display: inline-block; width: 10px; height: 10px; background: var(--amber); border-radius: 2px; flex-shrink: 0;"></span>
+                        = same maintainer as root
+                    </span>
+                </div>
+
+                <div class="view-toggles">
+                    <button class="view-btn active" onclick="setView('tree')" id="view-tree-btn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg>
+                        Tree
+                    </button>
+                    <button class="view-btn" onclick="setView('list')" id="view-list-btn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3" y1="6" y2="6"/><line x1="3" x2="3" y1="12" y2="12"/><line x1="3" x2="3" y1="18" y2="18"/></svg>
+                        List
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-content">
+            <div style="color: var(--text-dim); text-align: center; margin-top: 100px;">
+                <svg class="icon" style="width: 48px; height: 48px; opacity: 0.2; margin-bottom: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                <p>Run analysis to build dependency graph</p>
+            </div>
+        </div>
+
+        <div id="status-bar">
+            <span id="status-text">Ready</span>
+            <button id="btnExport" style="background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 0.75rem; padding: 0; display: none;" onclick="exportResults()">Export as .txt</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * @typedef {Object} DepNode
+     * @property {string} name
+     * @property {string} version
+     * @property {string[]} owners
+     * @property {string} rawString
+     * @property {DepNode[]} children
+     * @property {string} error
+     * @property {boolean} isDuplicate
+     */
+
+    // Configuration
+    const CORS_PROXY_URL = "";
+
+    // Show a warning banner if the page is opened directly as a file:// URL
+    // and no CORS proxy is configured, since browsers block cross-origin fetch
+    // requests from that context.
+    if (window.location.protocol === 'file:' && CORS_PROXY_URL === '') {
+        document.getElementById('local-file-warning').classList.add('visible');
+    }
+
+    const state = {
+        processed: new Map(), // name -> version
+        owners: new Map(), // name -> owners string[]
+        tree: null,
+        viewMode: 'tree',
+        isAnalysing: false,
+        logLines: [], // For export
+        rootAuthors: []
+    };
+
+    /**
+     * Triggered whenever the package name input changes.
+     * Resets discovered and selected extras.
+     */
+    function handlePackageNameChange() {
+        const container = document.getElementById('extras-discovery');
+        const extrasInput = document.getElementById('extras');
+        container.innerHTML = '<span style="color: var(--text-dim); font-size: 0.75rem;">Click "Scan Extras" to see optional features for this package.</span>';
+        extrasInput.value = '';
+        state.rootAuthors = [];
+        document.getElementById('maintainer-toggle-wrap').style.display = 'none';
+    }
+
+    /**
+     * Fetch available extras for a package without running the full tree.
+     */
+    async function discoverExtras() {
+        const pkg = document.getElementById('packageName').value.trim();
+        const container = document.getElementById('extras-discovery');
+        const extrasInput = document.getElementById('extras');
+        
+        if (!pkg) return;
+
+        // Show loading state
+        container.innerHTML = `<span style="color: var(--accent); font-size: 0.75rem;">Scanning PyPI for ${pkg}...</span>`;
+        extrasInput.value = '';
+
+        try {
+            const apiUrl = `https://pypi.org/pypi/${pkg}/json`;
+            const fetchUrl = CORS_PROXY_URL + encodeURIComponent(apiUrl);
+            const response = await fetch(fetchUrl);
+            
+            if (!response.ok) {
+                if (response.status === 404) {
+                    container.innerHTML = `<span style="color: var(--error); font-size: 0.75rem;">Package "${pkg}" not found on PyPI.</span>`;
+                } else {
+                    container.innerHTML = `<span style="color: var(--error); font-size: 0.75rem;">Error fetching metadata (${response.status}).</span>`;
+                }
+                return;
+            }
+
+            const data = await response.json();
+            
+            // Set root authors while we are here
+            state.rootAuthors = extractOwnership(data.ownership);
+
+            const extrasSet = new Set(data.info.provides_extra || []);
+            
+            // Fallback: search requires_dist markers if provides_extra is empty
+            if (extrasSet.size === 0 && data.info.requires_dist) {
+                data.info.requires_dist.forEach(dist => {
+                    const match = dist.match(/extra\s*==\s*['"]([^'"]+)['"]/);
+                    if (match) extrasSet.add(match[1]);
+                });
+            }
+
+            container.innerHTML = '';
+            
+            // Group for Special Controls
+            const specialGroup = document.createElement('div');
+            specialGroup.className = 'extras-group';
+            addExtraPill('core only', specialGroup);
+            
+            // Add 'all' shortcut only if there are actually extras
+            if (extrasSet.size > 0) {
+                addExtraPill('all', specialGroup);
+                extrasSet.delete('all'); // Deduplicate from regular list
+            }
+            container.appendChild(specialGroup);
+
+            // If there are specific extras, show them separated
+            if (extrasSet.size > 0) {
+                const sep = document.createElement('div');
+                sep.className = 'extras-separator';
+                container.appendChild(sep);
+
+                const regularGroup = document.createElement('div');
+                regularGroup.className = 'extras-group';
+                Array.from(extrasSet).sort().forEach(ex => addExtraPill(ex, regularGroup));
+                container.appendChild(regularGroup);
+            } else {
+                // Feedback for no extras beyond core
+                const info = document.createElement('span');
+                info.style.color = 'var(--text-dim)';
+                info.style.fontSize = '0.75rem';
+                info.style.marginLeft = '8px';
+                info.textContent = `(No optional extras found for core)`;
+                container.appendChild(info);
+            }
+            
+            updatePillStates();
+
+        } catch (e) {
+            container.innerHTML = `<span style="color: var(--error); font-size: 0.75rem;">Could not connect to PyPI metadata service.</span>`;
+        }
+    }
+
+    /**
+     * Creates and attaches a pill button to the discovery container.
+     */
+    function addExtraPill(name, container) {
+        const pill = document.createElement('span');
+        pill.className = `extra-pill`;
+        pill.textContent = name;
+        pill.dataset.name = name;
+        pill.onclick = () => {
+            const input = document.getElementById('extras');
+            
+            if (name === 'core only') {
+                input.value = '';
+                updatePillStates();
+                return;
+            }
+
+            let current = input.value.split(',').map(s => s.trim()).filter(s => s);
+            if (current.includes(name)) {
+                current = current.filter(s => s !== name);
+            } else {
+                current.push(name);
+            }
+            input.value = current.join(', ');
+            updatePillStates();
+        };
+        container.appendChild(pill);
+    }
+
+    /**
+     * Updates active states of pills based on the current input value.
+     */
+    function updatePillStates() {
+        const input = document.getElementById('extras');
+        const current = input.value.split(',').map(s => s.trim()).filter(s => s);
+        const pills = document.querySelectorAll('.extra-pill');
+        
+        pills.forEach(p => {
+            const name = p.dataset.name;
+            if (name === 'core only') {
+                p.classList.toggle('active', current.length === 0);
+            } else {
+                p.classList.toggle('active', current.includes(name));
+            }
+        });
+    }
+
+    /**
+     * Main analysis trigger
+     */
+    async function startAnalysis() {
+        const pkg = document.getElementById('packageName').value.trim();
+        const extrasInput = document.getElementById('extras').value.trim().toLowerCase();
+
+        if (!pkg) return;
+
+        state.isAnalysing = true;
+        state.processed.clear();
+        state.owners.clear();
+        state.logLines = [];
+        state.tree = { name: pkg, version: '...', author: '...', children: [], rawString: pkg };
+        
+        document.getElementById('btnRun').disabled = true;
+        document.getElementById('status-text').textContent = `Initialising ${pkg}...`;
+        document.getElementById('view-content').innerHTML = `<div style="text-align:center; margin-top:100px;"><svg class="icon loading-spinner" style="width:30px; height:30px; color:var(--accent)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><p>Building tree...</p></div>`;
+
+        const requestedExtras = extrasInput === "all" ? ["all"] : extrasInput.split(',').map(s => s.trim()).filter(s => s);
+
+        try {
+            state.tree = await fetchNodeRecursive(pkg, requestedExtras, true);
+            
+            // Set root authors if not already set by Scan Extras
+            if (!state.rootAuthors.length) {
+                state.rootAuthors = state.tree.owners || [];
+            }
+            
+            document.getElementById('maintainer-toggle-wrap').style.display = state.rootAuthors.length > 0 ? 'flex' : 'none';
+
+            render();
+            document.getElementById('status-text').textContent = `Finished. ${state.processed.size} unique packages found. Maintainer: ${state.rootAuthors.join(', ') || 'Unknown'}`;
+            document.getElementById('result-info').textContent = `${pkg} Tree`;
+            document.getElementById('btnExport').style.display = 'inline-block';
+        } catch (err) {
+            document.getElementById('status-text').textContent = `Error: ${err.message}`;
+        } finally {
+            state.isAnalysing = false;
+            document.getElementById('btnRun').disabled = false;
+        }
+    }
+
+    async function fetchNodeRecursive(name, extras, isTop) {
+        const node = { name, version: 'unknown', owners: [], children: [], rawString: name, error: null };
+        const nameKey = name.toLowerCase();
+
+        // Check if already processed to avoid cycles
+        if (!isTop && state.processed.has(nameKey)) {
+            node.version = state.processed.get(nameKey);
+            node.owners = state.owners.get(nameKey) || [];
+            node.isDuplicate = true;
+            return node;
+        }
+
+        try {
+            const apiUrl = `https://pypi.org/pypi/${name}/json`;
+            const fetchUrl = CORS_PROXY_URL + encodeURIComponent(apiUrl);
+            const res = await fetch(fetchUrl);
+            
+            if (!res.ok) throw new Error(res.status === 404 ? 'Not Found' : 'API Error');
+            
+            const data = await res.json();
+            node.version = data.info.version;
+            node.owners = extractOwnership(data.ownership);
+            
+            state.processed.set(nameKey, node.version);
+            state.owners.set(nameKey, node.owners);
+
+            const dists = data.info.requires_dist || [];
+            for (const dist of dists) {
+                const parsed = parseDep(dist);
+                if (!parsed.name) continue;
+
+                let shouldInclude = false;
+                if (!parsed.extra) {
+                    shouldInclude = true; // Core
+                } else if (isTop && (extras.includes('all') || extras.includes(parsed.extra))) {
+                    shouldInclude = true; // Requested Extra
+                }
+
+                if (shouldInclude) {
+                    const child = await fetchNodeRecursive(parsed.name, [], false);
+                    child.rawString = dist;
+                    node.children.push(child);
+                }
+            }
+        } catch (e) {
+            node.error = e.message;
+        }
+
+        return node;
+    }
+
+    function extractOwnership(ownership) {
+        if (!ownership) return [];
+        // Ownership object contains organization and roles properties
+        if (ownership.organization && ownership.organization.trim()) return [ownership.organization.trim()];
+
+        if (Array.isArray(ownership.roles)) {
+            const owners = ownership.roles
+                .filter(r => r.role && r.role.trim() === "Owner" && r.user && r.user.trim())
+                .map(r => r.user.trim());
+            if (owners.length > 0) return owners;
+        }
+        return [];
+    }
+
+    function parseDep(str) {
+        const parts = str.split(';');
+        const nameMatch = parts[0].trim().match(/^([a-zA-Z0-9_.-]+)/);
+        const name = nameMatch ? nameMatch[1] : null;
+        let extra = null;
+        if (parts[1]) {
+            const m = parts[1].match(/extra\s*==\s*['"]([^'"]+)['"]/);
+            if (m) extra = m[1].toLowerCase();
+        }
+        return { name, extra };
+    }
+
+    /**
+     * Rendering Logic
+     */
+    function setView(mode) {
+        state.viewMode = mode;
+        document.getElementById('view-tree-btn').classList.toggle('active', mode === 'tree');
+        document.getElementById('view-list-btn').classList.toggle('active', mode === 'list');
+        render();
+    }
+
+    function render() {
+        if (!state.tree) return;
+        const container = document.getElementById('view-content');
+        container.innerHTML = '';
+
+        const hideSameMaintainer = document.getElementById('hide-maintainer-toggle')?.checked || false;
+
+        if (state.viewMode === 'tree') {
+            const treeEl = createTreeNode(state.tree, 0, hideSameMaintainer);
+            if (treeEl) {
+                container.appendChild(treeEl);
+            } else {
+                container.innerHTML = '<p style="text-align:center; color:var(--text-dim); margin-top:100px;">All dependencies hidden by filter</p>';
+            }
+        } else {
+            const listDiv = document.createElement('div');
+            listDiv.className = 'flat-list';
+            
+            const sorted = Array.from(state.processed.entries()).sort();
+            sorted.forEach(([name, ver]) => {
+                const pkgOwners = state.owners.get(name) || [];
+                const isMaintainer = pkgOwners.length > 0 && pkgOwners.some(o => state.rootAuthors.includes(o)) && name !== state.tree.name.toLowerCase();
+
+                if (hideSameMaintainer && isMaintainer) return;
+
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                
+                let nameClass = 'node-name';
+                if (isMaintainer) nameClass += ' node-name-maintainer';
+
+                item.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <svg class="icon icon-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22v-10"/></svg>
+                        <span class="${nameClass}">${name}</span>
+                    </div>
+                    <span class="node-version">v${ver}</span>
+                `;
+                listDiv.appendChild(item);
+            });
+            container.appendChild(listDiv);
+        }
+    }
+
+    /**
+     * Recursive function to create tree view nodes with smart filtering.
+     */
+    function createTreeNode(node, depth, hideMaintainer) {
+        const nameKey = node.name.toLowerCase();
+        const isMaintainer = depth > 0 && node.owners.length > 0 && node.owners.some(o => state.rootAuthors.includes(o));
+        const isLeaf = !node.children || node.children.length === 0;
+
+        // Logic: 
+        // 1. If hideMaintainer is true AND same author AND leaf node -> Hide completely (return null)
+        // 2. If hideMaintainer is true AND same author AND NOT leaf node -> Gray out (but show children)
+        
+        let nodeClass = 'tree-node';
+        let headerClass = 'node-header';
+        let nameClass = 'node-name';
+
+        if (isMaintainer) {
+            nameClass += ' node-name-maintainer';
+        }
+
+        if (hideMaintainer && isMaintainer) {
+            if (isLeaf) return null; // Hide completely
+            headerClass += ' node-grayed'; // Just gray out if it has children
+        }
+
+        const div = document.createElement('div');
+        div.className = nodeClass;
+        if (depth === 0) div.style.marginLeft = '0';
+
+        const header = document.createElement('div');
+        header.className = headerClass;
+        header.title = `Owners: ${node.owners.length > 0 ? node.owners.join(', ') : 'Unknown'}`;
+        
+        const icon = depth === 0 ? 
+            `<svg class="icon icon-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22v-10"/></svg>` : 
+            `<svg class="icon icon-dep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`;
+
+        header.innerHTML = `
+            ${icon}
+            <span class="${nameClass}">${node.name}</span>
+            <span class="node-version">v${node.version}</span>
+            ${node.isDuplicate ? '<span class="node-meta">[duplicate]</span>' : ''}
+            ${node.error ? `<span class="node-error">(${node.error})</span>` : ''}
+        `;
+        
+        div.appendChild(header);
+
+        let visibleChildrenCount = 0;
+        if (node.children && node.children.length > 0) {
+            node.children.forEach(child => {
+                const childEl = createTreeNode(child, depth + 1, hideMaintainer);
+                if (childEl) {
+                    div.appendChild(childEl);
+                    visibleChildrenCount++;
+                }
+            });
+        }
+
+        // If after filtering all children are gone, and this was a maintainer node being grayed out, 
+        // we should actually hide it too because it's now effectively a leaf of maintainer packages.
+        if (hideMaintainer && isMaintainer && visibleChildrenCount === 0 && !isLeaf) {
+            return null;
+        }
+
+        return div;
+    }
+
+    function exportResults() {
+        const pkg = document.getElementById('packageName').value.trim();
+        const content = state.logLines.join('\n');
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${pkg}-deps.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function clearAll() {
+        document.getElementById('packageName').value = '';
+        document.getElementById('extras').value = '';
+        document.getElementById('extras-discovery').innerHTML = '<span style="color: var(--text-dim); font-size: 0.75rem;">Click "Scan Extras" to see optional features for this package.</span>';
+        document.getElementById('view-content').innerHTML = '<p style="text-align:center; color:var(--text-dim); margin-top:100px;">Run analysis to build dependency graph</p>';
+        document.getElementById('maintainer-toggle-wrap').style.display = 'none';
+        state.tree = null;
+        state.processed.clear();
+        state.owners.clear();
+        state.rootAuthors = [];
+        document.getElementById('result-info').textContent = 'No results yet';
+        document.getElementById('btnExport').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>

@@ -3,3 +3,8 @@ _*
 
 .vscode/
 
+# Unicode Inspector Files
+Blocks.txt
+emoji-ordering.txt
+UnicodeData.txt
+unversionedchartlist.txt
