@@ -2,6 +2,7 @@
 Various utilities and tools that run locally right in your browser.
 
 ### How to Download
+To download the entire repo, click the green "Code" button, then select "Download Zip".
 <p align="center"><img width="500" alt="image" src="https://github.com/user-attachments/assets/a2f8c398-664d-4b89-81e8-d5ffc9e8d472" /></p>
 
 ### Or use and bookmark the tools online
