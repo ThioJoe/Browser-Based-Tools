@@ -972,13 +972,18 @@ Author: ThioJoe (https://github.com/ThioJoe)
                 markerEl.style.top = `${screenY}px`;
             }
 
-            window.addEventListener('resize', () => {
+            function repositionMarkers() {
                 if (contentArea.classList.contains('hidden') || !currentImageState.img) return;
                 const { centroid, bboxCenter } = currentImageState;
                 if (!centroid || !bboxCenter) return;
                 positionVisuals(centroidMarker, centroid.x, centroid.y);
                 positionVisuals(bboxMarker, bboxCenter.x, bboxCenter.y);
-            });
+            }
+
+            window.addEventListener('resize', repositionMarkers);
+
+            const canvasContainer = canvas.parentElement;
+            new ResizeObserver(repositionMarkers).observe(canvasContainer);
 
     </script>
 </body>
