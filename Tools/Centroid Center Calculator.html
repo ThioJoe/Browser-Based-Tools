@@ -845,10 +845,35 @@ Author: ThioJoe (https://github.com/ThioJoe)
                 };
             }
 
+            function applyAlphaVisualization() {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                const threshold = parseInt(alphaSlider.value, 10);
+                const checkSize = 8;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    if (data[i + 3] < threshold) {
+                        const pixelIndex = i / 4;
+                        const x = pixelIndex % canvas.width;
+                        const y = Math.floor(pixelIndex / canvas.width);
+                        const isLight = ((Math.floor(x / checkSize) + Math.floor(y / checkSize)) % 2 === 0);
+                        data[i] = isLight ? 68 : 51;
+                        data[i + 1] = isLight ? 68 : 51;
+                        data[i + 2] = isLight ? 68 : 51;
+                        data[i + 3] = 255;
+                    }
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+            }
+
             function drawSmartCrosshairs() {
                 // Reset canvas to base image to clear any old crosshairs
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(currentImageState.img, 0, 0);
+
+                // Show which pixels meet the alpha threshold
+                applyAlphaVisualization();
 
                 const showCentroid = centroidToggle.checked;
                 const showBbox = bboxToggle.checked;
