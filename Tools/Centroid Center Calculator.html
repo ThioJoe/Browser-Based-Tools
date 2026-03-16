@@ -425,6 +425,79 @@ Author: ThioJoe (https://github.com/ThioJoe)
             color: white;
         }
         .bg-reset-button:hover { background-color: #4b5563; }
+
+        .about-button-row {
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+
+        .about-button {
+            cursor: pointer;
+            padding: 0.4rem 1.1rem;
+            background-color: transparent;
+            color: #9ca3af;
+            border: 1px solid #4b5563;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .about-button:hover {
+            background-color: #374151;
+            color: #e5e7eb;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-box {
+            background-color: #1f2937;
+            border: 1px solid #4b5563;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            max-width: 22rem;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-box h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .modal-box p {
+            color: #d1d5db;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-box a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        .modal-box a:hover { text-decoration: underline; }
+
+        .modal-close-button {
+            margin-top: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem 1.5rem;
+            background-color: #374151;
+            color: #e5e7eb;
+            border: 1px solid #4b5563;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+        .modal-close-button:hover { background-color: #4b5563; }
     </style>
 </head>
 
@@ -572,6 +645,12 @@ Author: ThioJoe (https://github.com/ThioJoe)
                 <h3>No image selected</h3>
                 <p>Upload a PNG with transparency for the best results.</p>
             </div>
+
+            <!-- About button -->
+            <div class="about-button-row">
+                <button id="aboutButton" class="about-button">About</button>
+            </div>
+
         </div>
     </div>
 
@@ -1062,6 +1141,23 @@ Author: ThioJoe (https://github.com/ThioJoe)
 
             const canvasContainer = canvas.parentElement;
             new ResizeObserver(repositionMarkers).observe(canvasContainer);
+
+            // --- About Modal ---
+            const aboutButton = document.getElementById('aboutButton');
+            aboutButton.addEventListener('click', () => {
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop';
+                backdrop.innerHTML = `
+                    <div class="modal-box">
+                        <h2>Visual Centroid Calculator</h2>
+                        <p>Source Repo:<br><a href="https://github.com/ThioJoe/Browser-Based-Tools" target="_blank" rel="noopener noreferrer">github.com/ThioJoe/Browser-Based-Tools</a></p>
+                        <p>Author:<br><a href="https://github.com/ThioJoe" target="_blank" rel="noopener noreferrer">ThioJoe</a></p>
+                        <button class="modal-close-button">Close</button>
+                    </div>`;
+                backdrop.querySelector('.modal-close-button').addEventListener('click', () => backdrop.remove());
+                backdrop.addEventListener('click', (e) => { if (e.target === backdrop) backdrop.remove(); });
+                document.body.appendChild(backdrop);
+            });
 
     </script>
 </body>
