@@ -291,6 +291,17 @@ Author: ThioJoe (https://github.com/ThioJoe)
         }
 
         .toggle-text { font-weight: 500; color: white; }
+
+        .warning-banner {
+            background-color: #78350f;
+            border: 1px solid #f59e0b;
+            color: #fde68a;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -309,6 +320,10 @@ Author: ThioJoe (https://github.com/ThioJoe)
                 <input type="file" id="imageUpload" class="hidden"
                     accept="image/png, image/jpeg, image/gif, image/webp">
                 <p id="fileName" class="file-name"></p>
+            </div>
+
+            <div id="noAlphaWarning" class="warning-banner hidden">
+                ⚠ This image has no transparency. Results may not be meaningful — this tool is designed for images with transparent regions.
             </div>
 
             <!-- Main Content Area -->
@@ -421,6 +436,8 @@ Author: ThioJoe (https://github.com/ThioJoe)
             const bboxToggle = document.getElementById('bboxToggle');
             const crosshairsToggle = document.getElementById('crosshairsToggle');
 
+            const noAlphaWarning = document.getElementById('noAlphaWarning');
+
             let currentImageState = { img: null, centroid: null, bboxCenter: null };
 
             imageUpload.addEventListener('change', (event) => handleFile(event.target.files[0]));
@@ -496,6 +513,9 @@ Author: ThioJoe (https://github.com/ThioJoe)
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0);
 
+                const hasTransparency = checkForTransparency();
+                noAlphaWarning.classList.toggle('hidden', hasTransparency);
+
                 const centroid = calculateCentroid();
                 const bboxCenter = { x: img.width / 2, y: img.height / 2 };
 
@@ -508,6 +528,15 @@ Author: ThioJoe (https://github.com/ThioJoe)
                 positionVisuals(bboxMarker, bboxCenter.x, bboxCenter.y);
 
                 updateVisualVisibility();
+            }
+
+            function checkForTransparency() {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                for (let i = 3; i < data.length; i += 4) {
+                    if (data[i] < 255) return true;
+                }
+                return false;
             }
 
             function calculateCentroid() {
