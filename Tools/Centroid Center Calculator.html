@@ -488,6 +488,11 @@ Author: ThioJoe (https://github.com/ThioJoe)
                                     <span class="toggle-switch"></span>
                                 </label>
                                 <label class="toggle-label">
+                                    <span class="toggle-text">Show Bounding Box</span>
+                                    <input type="checkbox" id="bboxRectToggle" class="toggle-checkbox">
+                                    <span class="toggle-switch"></span>
+                                </label>
+                                <label class="toggle-label">
                                     <span class="toggle-text">Show Crosshairs</span>
                                     <input type="checkbox" id="crosshairsToggle" class="toggle-checkbox">
                                     <span class="toggle-switch"></span>
@@ -592,6 +597,7 @@ Author: ThioJoe (https://github.com/ThioJoe)
             const centroidToggle = document.getElementById('centroidToggle');
             const bboxToggle = document.getElementById('bboxToggle');
             const crosshairsToggle = document.getElementById('crosshairsToggle');
+            const bboxRectToggle = document.getElementById('bboxRectToggle');
 
             const noAlphaWarning = document.getElementById('noAlphaWarning');
 
@@ -654,6 +660,7 @@ Author: ThioJoe (https://github.com/ThioJoe)
 
             centroidToggle.addEventListener('change', updateVisualVisibility);
             bboxToggle.addEventListener('change', updateVisualVisibility);
+            bboxRectToggle.addEventListener('change', updateVisualVisibility);
             crosshairsToggle.addEventListener('change', updateVisualVisibility);
 
             // --- Background Removal ---
@@ -875,6 +882,16 @@ Author: ThioJoe (https://github.com/ThioJoe)
                 // Show which pixels meet the alpha threshold
                 applyAlphaVisualization();
 
+                // Draw bounding box rectangle if enabled
+                if (bboxRectToggle.checked && currentImageState.bboxCenter && currentImageState.bboxCenter.bounds) {
+                    const b = currentImageState.bboxCenter.bounds;
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+                    ctx.strokeRect(b.minX, b.minY, b.maxX - b.minX, b.maxY - b.minY);
+                    ctx.setLineDash([]);
+                }
+
                 const showCentroid = centroidToggle.checked;
                 const showBbox = bboxToggle.checked;
                 const showCrosshairs = crosshairsToggle.checked;
@@ -974,12 +991,13 @@ Author: ThioJoe (https://github.com/ThioJoe)
                 }
 
                 if (!found) {
-                    return { x: canvas.width / 2, y: canvas.height / 2 };
+                    return { x: canvas.width / 2, y: canvas.height / 2, bounds: null };
                 }
 
                 return {
                     x: minX + (maxX - minX) / 2,
-                    y: minY + (maxY - minY) / 2
+                    y: minY + (maxY - minY) / 2,
+                    bounds: { minX, minY, maxX, maxY }
                 };
             }
 
