@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- 
+Visual Centroid Calculator
+
+Source Repo: https://github.com/ThioJoe/Browser-Based-Tools
+Author: ThioJoe (https://github.com/ThioJoe)
+-->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Centroid Calculator</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #111827;
+            color: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .hidden { display: none !important; }
+
+        .container { width: 100%; max-width: 56rem; margin: 0 auto; }
+
+        .main-card {
+            background-color: #1f2937;
+            border-radius: 0.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .main-card.drag-over {
+            border: 2px dashed #3b82f6;
+            background-color: #374151;
+        }
+        @media (min-width: 768px) {
+            .main-card { padding: 2rem; }
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        @media (min-width: 768px) {
+            .title { font-size: 2.25rem; }
+        }
+
+        .subtitle { color: #9ca3af; margin-bottom: 1.5rem; }
+
+        .upload-section { margin-bottom: 1.5rem; }
+
+        .file-name { color: #6b7280; margin-top: 0.5rem; font-size: 0.875rem; }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .content-grid { grid-template-columns: 2fr 1fr; }
+        }
+
+        .canvas-container {
+            background-color: #111827;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            position: relative;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+        }
+
+        .canvas-container canvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 0.375rem;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .controls-panel {
+            background-color: #374151;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: left;
+        }
+
+        .controls-heading {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .controls-section { margin-bottom: 1.5rem; }
+        .controls-section > * + * { margin-top: 1rem; }
+
+        .slider-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #d1d5db;
+            margin-bottom: 0.5rem;
+        }
+
+        .slider {
+            width: 100%;
+            height: 0.5rem;
+            background-color: #4b5563;
+            border-radius: 0.5rem;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .toggles > * + * { margin-top: 0.75rem; }
+
+        .results-section {
+            border-top: 1px solid #4b5563;
+            padding-top: 1rem;
+        }
+
+        .results-note {
+            font-size: 0.875rem;
+            color: #9ca3af;
+            margin-bottom: 1rem;
+        }
+
+        .results-list > * + * { margin-top: 1rem; }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .result-dot {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 9999px;
+            border: 2px solid white;
+            margin-right: 0.5rem;
+            flex-shrink: 0;
+        }
+        .result-dot-blue { background-color: #3b82f6; }
+        .result-dot-red { background-color: #ef4444; }
+
+        .result-label { font-weight: 500; color: white; }
+
+        .result-coords {
+            color: #d1d5db;
+            font-size: 1.125rem;
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+        }
+
+        .save-section { margin-top: 1.5rem; }
+
+        .save-button {
+            width: 100%;
+            cursor: pointer;
+            padding: 0.75rem 1.5rem;
+            background-color: #16a34a;
+            color: white;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            border: none;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+        .save-button:hover { background-color: #15803d; }
+
+        .initial-instructions {
+            margin-top: 2rem;
+            border: 2px dashed #4b5563;
+            border-radius: 0.5rem;
+            padding: 3rem;
+        }
+        .initial-instructions svg {
+            display: block;
+            margin: 0 auto;
+            height: 3rem;
+            width: 3rem;
+            color: #6b7280;
+        }
+        .initial-instructions h3 {
+            margin-top: 0.5rem;
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: white;
+            text-align: center;
+        }
+        .initial-instructions p {
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: #9ca3af;
+            text-align: center;
+        }
+
+        /* Markers */
+        .marker {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            z-index: 30;
+        }
+        .centroid-marker {
+            background-color: #3b82f6;
+            border: 1px solid white;
+        }
+        .bbox-marker {
+            background-color: #ef4444;
+            border: 1px solid white;
+        }
+
+        /* File input button */
+        .file-input-button {
+            cursor: pointer;
+            padding: 0.75rem 1.5rem;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .file-input-button:hover {
+            background-color: #2563eb;
+        }
+
+        /* Toggle switch */
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        .toggle-checkbox {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            flex-shrink: 0;
+            width: 3rem;
+            height: 1.5rem;
+            background-color: #4b5563;
+            border-radius: 9999px;
+            transition: background-color 0.2s;
+            margin-left: 1rem;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 0.25rem;
+            left: 0.25rem;
+            width: 1rem;
+            height: 1rem;
+            background-color: white;
+            border-radius: 9999px;
+            transition: transform 0.2s;
+        }
+        .toggle-checkbox:checked + .toggle-switch {
+            background-color: #3b82f6;
+        }
+        .toggle-checkbox:checked + .toggle-switch::after {
+            transform: translateX(1.5rem);
+        }
+
+        .toggle-text { font-weight: 500; color: white; }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div id="mainCard" class="main-card">
+            <h1 class="title">Visual Centroid Calculator</h1>
+            <p class="subtitle">Find the true visual center of a shape in an image.</p>
+
+            <!-- File Upload -->
+            <div class="upload-section">
+                <label for="imageUpload" class="file-input-button">
+                    Upload Image
+                </label>
+                <input type="file" id="imageUpload" class="hidden"
+                    accept="image/png, image/jpeg, image/gif, image/webp">
+                <p id="fileName" class="file-name"></p>
+            </div>
+
+            <!-- Main Content Area -->
+            <div id="content-area" class="hidden">
+                <!-- Canvas and Results Wrapper -->
+                <div class="content-grid">
+                    <!-- Canvas on the left -->
+                    <div class="canvas-container">
+                        <canvas id="imageCanvas"></canvas>
+                    
+                        <div id="centroidMarker" class="marker centroid-marker hidden"></div>
+                    
+                        <div id="bboxMarker" class="marker bbox-marker hidden"></div>
+                    </div>
+
+                    <!-- Results on the right -->
+                    <div class="controls-panel">
+                        <h2 class="controls-heading">Controls & Results</h2>
+
+                        <!-- Controls -->
+                        <div class="controls-section">
+                            <!-- Alpha Threshold Slider -->
+                            <div>
+                                <label for="alphaSlider" class="slider-label">Alpha
+                                    Threshold (<span id="alphaValue">127</span>)</label>
+                                <input id="alphaSlider" type="range" min="1" max="255" value="127"
+                                    class="slider">
+                            </div>
+                            <!-- Toggles -->
+                            <div class="toggles">
+                                <label class="toggle-label">
+                                    <span class="toggle-text">Show Centroid</span>
+                                    <input type="checkbox" id="centroidToggle" class="toggle-checkbox" checked>
+                                    <span class="toggle-switch"></span>
+                                </label>
+                                <label class="toggle-label">
+                                    <span class="toggle-text">Show Bounding Box Center</span>
+                                    <input type="checkbox" id="bboxToggle" class="toggle-checkbox">
+                                    <span class="toggle-switch"></span>
+                                </label>
+                                <label class="toggle-label">
+                                    <span class="toggle-text">Show Crosshairs</span>
+                                    <input type="checkbox" id="crosshairsToggle" class="toggle-checkbox">
+                                    <span class="toggle-switch"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="results-text" class="results-section">
+                            <p class="results-note">Coordinates are relative to the top-left corner of the
+                                image.</p>
+                            <div class="results-list">
+                                <div>
+                                    <div class="result-header">
+                                        <div class="result-dot result-dot-blue"></div>
+                                        <h3 class="result-label">Visual Centroid</h3>
+                                    </div>
+                                    <p id="centroidCoords" class="result-coords">-</p>
+                                </div>
+                                <div>
+                                    <div class="result-header">
+                                        <div class="result-dot result-dot-red"></div>
+                                        <h3 class="result-label">Bounding Box Center</h3>
+                                    </div>
+                                    <p id="bboxCoords" class="result-coords">-</p>
+                                </div>
+                            </div>
+                            <div class="save-section">
+                                <button id="saveButton" class="save-button">
+                                    Save Image with Markers
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Initial instructions -->
+            <div id="initial-instructions" class="initial-instructions">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <h3>No image selected</h3>
+                <p>Upload a PNG with transparency for the best results.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+            const imageUpload = document.getElementById('imageUpload');
+            const fileNameDisplay = document.getElementById('fileName');
+            const canvas = document.getElementById('imageCanvas');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+            const contentArea = document.getElementById('content-area');
+            const initialInstructions = document.getElementById('initial-instructions');
+
+            const centroidCoordsEl = document.getElementById('centroidCoords');
+            const bboxCoordsEl = document.getElementById('bboxCoords');
+
+            const centroidMarker = document.getElementById('centroidMarker');
+            const bboxMarker = document.getElementById('bboxMarker');
+
+            const saveButton = document.getElementById('saveButton');
+
+            const alphaSlider = document.getElementById('alphaSlider');
+            const alphaValue = document.getElementById('alphaValue');
+            const centroidToggle = document.getElementById('centroidToggle');
+            const bboxToggle = document.getElementById('bboxToggle');
+            const crosshairsToggle = document.getElementById('crosshairsToggle');
+
+            let currentImageState = { img: null, centroid: null, bboxCenter: null };
+
+            imageUpload.addEventListener('change', (event) => handleFile(event.target.files[0]));
+            saveButton.addEventListener('click', saveImageWithMarkers);
+
+            // --- Drag and Drop Logic ---
+            const dropZone = document.getElementById('mainCard');
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('drag-over');
+            });
+            dropZone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('drag-over');
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('drag-over');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    handleFile(file);
+                }
+            });
+
+            alphaSlider.addEventListener('input', () => {
+                alphaValue.textContent = alphaSlider.value;
+                if (currentImageState.img) {
+                    processImage(currentImageState.img);
+                }
+            });
+
+            const updateVisualVisibility = () => {
+                const showCentroid = centroidToggle.checked;
+                const showBbox = bboxToggle.checked;
+
+                centroidMarker.classList.toggle('hidden', !showCentroid);
+                bboxMarker.classList.toggle('hidden', !showBbox);
+
+                if (currentImageState.img) {
+                    drawSmartCrosshairs();
+                }
+            };
+
+            centroidToggle.addEventListener('change', updateVisualVisibility);
+            bboxToggle.addEventListener('change', updateVisualVisibility);
+            crosshairsToggle.addEventListener('change', updateVisualVisibility);
+
+            function handleFile(file) {
+                if (!file) return;
+
+                fileNameDisplay.textContent = file.name;
+                contentArea.classList.remove('hidden');
+                initialInstructions.classList.add('hidden');
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        processImage(img);
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+
+            function processImage(img) {
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+
+                const centroid = calculateCentroid();
+                const bboxCenter = { x: img.width / 2, y: img.height / 2 };
+
+                currentImageState = { img, centroid, bboxCenter };
+
+                centroidCoordsEl.textContent = `X: ${centroid.x.toFixed(2)}, Y: ${centroid.y.toFixed(2)}`;
+                bboxCoordsEl.textContent = `X: ${bboxCenter.x.toFixed(2)}, Y: ${bboxCenter.y.toFixed(2)}`;
+
+                positionVisuals(centroidMarker, centroid.x, centroid.y);
+                positionVisuals(bboxMarker, bboxCenter.x, bboxCenter.y);
+
+                updateVisualVisibility();
+            }
+
+            function calculateCentroid() {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+
+                let sumX = 0;
+                let sumY = 0;
+                let pointCount = 0;
+                const alphaThreshold = parseInt(alphaSlider.value, 10);
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const alpha = data[i + 3];
+
+                    if (alpha >= alphaThreshold) {
+                        const pixelIndex = i / 4;
+                        const x = pixelIndex % canvas.width;
+                        const y = Math.floor(pixelIndex / canvas.width);
+
+                        sumX += x;
+                        sumY += y;
+                        pointCount++;
+                    }
+                }
+
+                if (pointCount === 0) {
+                    return { x: canvas.width / 2, y: canvas.height / 2 };
+                }
+
+                return {
+                    x: sumX / pointCount,
+                    y: sumY / pointCount
+                };
+            }
+
+            function drawSmartCrosshairs() {
+                // Reset canvas to base image to clear any old crosshairs
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(currentImageState.img, 0, 0);
+
+                const showCentroid = centroidToggle.checked;
+                const showBbox = bboxToggle.checked;
+                const showCrosshairs = crosshairsToggle.checked;
+
+                if (!showCrosshairs) return;
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                const width = canvas.width;
+
+                // Maximum possible RGB distance is approx 441.67
+                const maxDist = Math.sqrt(255 * 255 * 3);
+
+                function processPixel(x, y, targetRGB) {
+                    const i = (y * width + x) * 4;
+                    const a = data[i + 3];
+
+                    // If fully transparent or nearly transparent, draw the base color
+                    if (a < 5) {
+                        data[i] = targetRGB[0];
+                        data[i + 1] = targetRGB[1];
+                        data[i + 2] = targetRGB[2];
+                        data[i + 3] = 255;
+                        return;
+                    }
+
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+
+                    // Calculate color distance (Euclidean distance)
+                    const dist = Math.sqrt(Math.pow(r - targetRGB[0], 2) + Math.pow(g - targetRGB[1], 2) + Math.pow(b - targetRGB[2], 2));
+
+                    // Similarity from 0.0 (opposite) to 1.0 (identical)
+                    const similarity = Math.max(0, 1 - (dist / maxDist));
+
+                    // Cube the similarity to make the inversion aggressively target only similar colors
+                    const strength = Math.pow(similarity, 3);
+
+                    // Base inversion logic
+                    const invR = 255 - r;
+                    const invG = 255 - g;
+                    const invB = 255 - b;
+
+                    // Blend between target color and inverted color based on strength
+                    data[i] = (invR * strength) + (targetRGB[0] * (1 - strength));
+                    data[i + 1] = (invG * strength) + (targetRGB[1] * (1 - strength));
+                    data[i + 2] = (invB * strength) + (targetRGB[2] * (1 - strength));
+                    data[i + 3] = 255; // Ensure the crosshair itself is fully visible where drawn
+                }
+
+                const drawLines = (centerX, centerY, targetRGB) => {
+                    const cx = Math.round(centerX);
+                    const cy = Math.round(centerY);
+
+                    for (let x = 0; x < width; x++) {
+                        processPixel(x, cy, targetRGB);
+                    }
+                    for (let y = 0; y < canvas.height; y++) {
+                        if (y !== cy) processPixel(cx, y, targetRGB);
+                    }
+                };
+
+                if (showCentroid && currentImageState.centroid) {
+                    drawLines(currentImageState.centroid.x, currentImageState.centroid.y, [59, 130, 246]); // Blue
+                }
+                if (showBbox && currentImageState.bboxCenter) {
+                    drawLines(currentImageState.bboxCenter.x, currentImageState.bboxCenter.y, [239, 68, 68]); // Red
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+            }
+
+            function drawMarkerOnCanvas(context, x, y, color) {
+                context.beginPath();
+                context.arc(x, y, 6, 0, 2 * Math.PI, false);
+                context.fillStyle = color;
+                context.fill();
+                context.lineWidth = 2;
+                context.strokeStyle = 'white';
+                context.stroke();
+            }
+
+            function saveImageWithMarkers() {
+                const { img, centroid, bboxCenter } = currentImageState;
+                if (!img) return;
+
+                // drawSmartCrosshairs automatically redraws the base image and applies crosshairs
+                drawSmartCrosshairs();
+
+                // Draw Markers standardly over the top if enabled
+                if (centroidToggle.checked && centroid) {
+                    drawMarkerOnCanvas(ctx, centroid.x, centroid.y, '#3b82f6');
+                }
+                if (bboxToggle.checked && bboxCenter) {
+                    drawMarkerOnCanvas(ctx, bboxCenter.x, bboxCenter.y, '#ef4444');
+                }
+
+                // Trigger download
+                const link = document.createElement('a');
+                link.download = 'centroid_image.png';
+                link.href = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+                link.click();
+
+                // Restore the UI canvas state
+                drawSmartCrosshairs();
+            }
+
+            function positionVisuals(markerEl, x, y) {
+                const canvasRect = canvas.getBoundingClientRect();
+                const scaleX = canvasRect.width / canvas.width;
+                const scaleY = canvasRect.height / canvas.height;
+                const canvasLeftOffset = canvas.offsetLeft;
+                const canvasTopOffset = canvas.offsetTop;
+
+                const screenX = canvasLeftOffset + (x * scaleX);
+                const screenY = canvasTopOffset + (y * scaleY);
+
+                markerEl.style.left = `${screenX}px`;
+                markerEl.style.top = `${screenY}px`;
+            }
+
+            window.addEventListener('resize', () => {
+                if (contentArea.classList.contains('hidden') || !currentImageState.img) return;
+                const { centroid, bboxCenter } = currentImageState;
+                if (!centroid || !bboxCenter) return;
+                positionVisuals(centroidMarker, centroid.x, centroid.y);
+                positionVisuals(bboxMarker, bboxCenter.x, bboxCenter.y);
+            });
+
+    </script>
+</body>
+
+</html>
